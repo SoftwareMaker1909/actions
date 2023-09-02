@@ -2,10 +2,12 @@ const mongoose = require('mongoose');
 const app = require('./app.cjs');
 
 const port = process.env.PORT || 3000;
-const {MONGO_DB_USR, MONGO_DB_PWD, MONGO_DB_HOST, MONGO_DB_PORT} =
+let {MONGO_DB_USR, MONGO_DB_PWD, MONGO_DB_HOST, MONGO_DB_PORT} =
   process.env;
 const credentials = MONGO_DB_USR ? `${MONGO_DB_USR}:${MONGO_DB_PWD}@` : '';
-const mongoURI = `mongodb://${credentials}${MONGO_DB_HOST}:${MONGO_DB_PORT}/`;
+const host = MONGO_DB_HOST ? `${MONGO_DB_HOST}` : 'localhost';
+const port = MONGO_DB_PORT ? `${MONGO_DB_USR}` : '27017';
+const mongoURI = `mongodb://${credentials}${host}:${port}/`;
 
 mongoose
     .connect(mongoURI, {useNewUrlParser: true, useUnifiedTopology: true, family: 4,})
