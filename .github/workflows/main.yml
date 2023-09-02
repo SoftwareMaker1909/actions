@@ -1,0 +1,30 @@
+name: Main workflow
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build docker
+        run: |
+          echo ---Building and starting up docker---
+          docker-compose -f ./docker-compose.test.yml -p testing up -d
+          echo ---Containers up---
+
+      - name: Set up Nodejs
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: install dependencies
+        run: npm install
+
+      - name: test
+        run: npm run test
+
+      - name: linter
+        run: npm run lint
