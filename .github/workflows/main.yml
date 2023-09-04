@@ -3,35 +3,22 @@ on:
   push:
     branches: [ master ]
 
-env:
-  MONGO_DB_USR: root
-  MONGO_DB_PWD: example
-  MONGO_DB_HOST: localhost
-  MONGO_DB_PORT: 27017
-  PORT: 3000
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
+      - name: 'Create env file'
+        run: |
+          touch .env
+          echo ${{secrets.API_KEY}} >> .env
+
       - name: Build docker
         run: |
           echo ---Building and starting up docker---
           docker-compose -f ./docker-compose.test.yml -p testing up -d
           echo ---Containers up---
-
-      - name: 'Create env file'
-        run: |
-          touch .env
-          echo API_ENDPOINT="https://xxx.execute-api.us-west-2.amazonaws.com" >> .env
-          echo PORT=PORT >> .env
-          echo MONGO_DB_USR=$MONGO_DB_USR >> .env
-          echo MONGO_DB_PWD=MONGO_DB_PWD >> .env
-          echo MONGO_DB_HOST=MONGO_DB_HOST >> .env
-          echo MONGO_DB_PORT=MONGO_DB_PORT >> .env
-
 
       - name: Set up Nodejs
         uses: actions/setup-node@v3
