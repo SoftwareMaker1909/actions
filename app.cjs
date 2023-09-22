@@ -1,12 +1,34 @@
 const express = require('express');
 const body_parser = require('body-parser');
 const path = require('path');
+const { trace } = require('@opentelemetry/api');
 
 require('dotenv').config();
 
 const Notes = require('./database.cjs');
 const updateRouter = require('./update-router.cjs');
 const app = express();
+
+const tracingMiddleware = (req, res, next) => {
+  const tracer = trace.getTracer('custom-middleware');
+  const span = tracer.startSpan('custom-middleware');
+
+  const userAgent = req.headers['user-agent'];
+  span.setAttribute('user-agent', userAgent);
+
+  const clientIP = req.ip;
+  span.setAttribute('client-ip', clientIP);
+
+  const queryParams = req.query;
+  span.setAttribute('query-params', JSON.stringify(queryParams));
+
+  const requestBody = req.body;
+  span.setAttribute('request-body', JSON.stringify(requestBody));
+
+  next();
+
+  span.end();
+};
 
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
@@ -18,6 +40,7 @@ app.use((req, res, next) => {
   console.log(req.method + ' : ' + req.url);
   next();
 });
+app.use(tracingMiddleware);
 
 app.get('/', (req, res, next) => {
   res.redirect('/index');
@@ -37,7 +60,7 @@ app
       // save notes first
       Note.save((err, product) => {
         if (err) console.log(err);
-        console.log(product);
+        console.log(product);``
       });
       res.redirect('/index');
     });
@@ -52,7 +75,6 @@ app.get('/index', (req, res, next) => {
     res.render('view', {data: Data});
   });
 });
-
 app.get('/delete/:__id', (req, res, next) => {
   Notes.findByIdAndRemove(
       req.params.__id,
